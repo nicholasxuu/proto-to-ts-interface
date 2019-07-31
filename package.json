@@ -1,0 +1,16 @@
+{
+  "name": "ts-script-base",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "author": "Nicholas Xu <shengfeng.xu@hotmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node ./src/index.ts"
+  },
+  "dependencies": {
+    "@types/node": "^12.6.8",
+    "fs-extra": "^8.1.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
+  }
+}
