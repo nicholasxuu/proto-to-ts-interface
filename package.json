@@ -1,5 +1,5 @@
 {
-  "name": "ts-script-base",
+  "name": "proto-to-ts-interface",
   "version": "1.0.0",
   "main": "index.ts",
   "author": "Nicholas Xu <shengfeng.xu@hotmail.com>",
