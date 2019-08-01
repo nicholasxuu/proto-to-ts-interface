@@ -12,7 +12,7 @@ const tab = '   ';
 export default class Converter {
   static run = async () => {
     const protoDir = path.resolve('./protos');
-    const outputDir = path.resolve('./interfaces');
+    const outputDir = path.resolve('./outputs');
 
     const fileList = fs.readdirSync(protoDir);
     console.log(fileList);
@@ -66,7 +66,7 @@ export default class Converter {
     const imports = [];
     const messages = [];
     const enums = [];
-    const messageTree = {};
+    let messageTree = {};
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -82,11 +82,21 @@ export default class Converter {
         continue;
       }
 
+      if ((match = line.match(/^\s*message\s+(\w+)\s*\{\s*\}/))) {
+        nestedNames.push(match[1]);
+        // console.log(line, nestedNames);
+        messages.push(nestedNames.join(''));
+        messageTree = Converter.addToTree(messageTree, nestedNames, {});
+        nestedNames.pop();
+        continue;
+      }
+
       if ((match = line.match(/^\s*message\s+(\w+)\s*\{/))) {
         state = PROTO_STATE.MESSAGE;
         nestedNames.push(match[1]);
         // console.log(line, nestedNames);
         messages.push(nestedNames.join(''));
+        messageTree = Converter.addToTree(messageTree, nestedNames, {});
         continue;
       }
       if ((match = line.match(/^\s*enum\s+(\w+)\s*\{/))) {
@@ -94,6 +104,7 @@ export default class Converter {
         nestedNames.push(match[1]);
         // console.log(line, nestedNames);
         enums.push(nestedNames.join(''));
+        messageTree = Converter.addToTree(messageTree, nestedNames, 'enum');
         continue;
       }
       if (line.match(/^\s*\}/)) {
@@ -114,6 +125,7 @@ export default class Converter {
           messageResult[currentName] = [];
         }
 
+        // todo: only support single level of parent right now
         if (
           (match = line.match(
             /^\s*(repeated\s+)?((\w+)\.)?(\w+)\s+([\w_]+)\s*\=\s*(\d+)/,
@@ -151,8 +163,18 @@ export default class Converter {
               case 'bool':
                 tsType = 'boolean';
                 break;
-              default:
-                tsType = typeName;
+              default: {
+                if (
+                  Converter.isTreeBranch(messageTree, [
+                    ...nestedNames,
+                    typeName,
+                  ])
+                ) {
+                  tsType = `${nestedNames.join('')}${typeName}`;
+                } else {
+                  tsType = typeName;
+                }
+              }
             }
           }
 
@@ -184,5 +206,32 @@ export default class Converter {
     return `${Converter.stringifyEnumsTs(
       enumResult,
     )}\n\n${Converter.stringifyMessagesTs(messageResult)}`;
+  };
+
+  static addToTree = (tree: object, keys: string[], value: any) => {
+    const result = tree; // use pointer
+
+    let currSubtree = tree;
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (!currSubtree[key]) {
+        currSubtree[key] = i === keys.length - 1 ? value : {};
+      }
+      currSubtree = currSubtree[key];
+    }
+    return result;
+  };
+
+  static isTreeBranch = (tree: object, keys: string[], length: number = -1) => {
+    const checkLength = length === -1 ? keys.length : length;
+    let currSubtree = tree;
+    for (let i = 0; i < checkLength; i++) {
+      const key = keys[i];
+      if (!currSubtree[key]) {
+        return false;
+      }
+      currSubtree = currSubtree[key];
+    }
+    return true;
   };
 }

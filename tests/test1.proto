@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package base;
+
+message Empty {}
+
+message Message1{
+    enum Type {
+        IMAGE = 0;
+        VIDEO = 1;
+    }
+    string msg = 1;
+}
+
+message Message2 {
+    enum Type {
+        IMAGE = 0;
+        AUDIO = 1;
+    }
+    string name1 = 1;
+    int32 name_2 = 2;
+    uint64 name3 = 3;
+    Message1 ref = 9;
+    Type name_type = 10;
+    Message1.Type other_type = 11;
+    AfterMessageEnum after_type = 12;
+    Message3.Type after_message_type = 12;
+    repeated string str_list = 20;
+    repeated Message1 ref_list = 21;
+}
+
+enum AfterMessageEnum {
+    VIDEO = 0;
+    AUDIO = 1;
+}
+
+message Message3{
+    enum Type {
+        IMAGE = 0;
+        VIDEO = 1;
+    }
+    string msg = 1;
+}
