@@ -44,7 +44,7 @@ export default class FileConverter {
   ) => {
     const content = fs.readFileSync(`${protoDir}/${filename}`, 'utf8');
     // console.log(content);
-    const resultStr = Converter.processProtoContent(content.split('\n'));
+    const resultStr = Converter.processProtoContent(content);
 
     fs.writeFileSync(`${outputDir}/${filename}.ts`, resultStr, 'utf8');
   };

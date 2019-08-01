@@ -26,7 +26,9 @@ export default class Converter {
       .join('\n\n');
   };
 
-  static processProtoContent = (lines: string[]): string => {
+  static processProtoContent = (str: string): string => {
+    const lines = str.split('\n');
+
     let state = PROTO_STATE.NULL;
 
     const messageResult = {};
