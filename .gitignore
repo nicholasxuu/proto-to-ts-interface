@@ -67,5 +67,5 @@ typings/
 .idea
 .vscode
 
-/protos
-/outputs
+protos
+outputs/*
