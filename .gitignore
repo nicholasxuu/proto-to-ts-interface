@@ -67,3 +67,5 @@ typings/
 .idea
 .vscode
 
+/protos
+/interfaces

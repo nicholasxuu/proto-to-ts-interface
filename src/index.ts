@@ -1,1 +1,3 @@
-console.log('a');
+import Converter from './converter';
+
+Converter.run();
