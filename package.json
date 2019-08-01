@@ -5,7 +5,8 @@
   "author": "Nicholas Xu <shengfeng.xu@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node ./src/index.ts"
+    "start": "ts-node ./src/run.ts",
+    "test": "ts-node ./src/test.ts"
   },
   "dependencies": {
     "@types/node": "^12.6.8",

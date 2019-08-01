@@ -1,3 +1,1 @@
-import Converter from './converter';
-
-Converter.run();
+export * from './Converter';

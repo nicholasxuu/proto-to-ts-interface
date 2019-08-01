@@ -1,5 +1,4 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import TreeHelper from './TreeHelper';
 
 const PROTO_STATE = {
   NULL: 0,
@@ -10,35 +9,6 @@ const PROTO_STATE = {
 const tab = '   ';
 
 export default class Converter {
-  static run = async () => {
-    const protoDir = path.resolve('./protos');
-    const outputDir = path.resolve('./outputs');
-
-    const fileList = fs.readdirSync(protoDir);
-    console.log(fileList);
-
-    for (let i = 0; i < fileList.length; i++) {
-      const filename = fileList[i];
-      if (!filename.endsWith('.proto')) {
-        continue;
-      }
-
-      Converter.processProto(protoDir, filename, outputDir);
-    }
-  };
-
-  static processProto = (
-    protoDir: string,
-    filename: string,
-    outputDir: string,
-  ) => {
-    const content = fs.readFileSync(`${protoDir}/${filename}`, 'utf8');
-    // console.log(content);
-    const resultStr = Converter.parseProtoContent(content.split('\n'));
-
-    fs.writeFileSync(`${outputDir}/${filename}.ts`, resultStr, 'utf8');
-  };
-
   static stringifyEnumsTs = (enums: { [name: string]: string[] }) => {
     return Object.keys(enums)
       .map(name => {
@@ -56,7 +26,7 @@ export default class Converter {
       .join('\n\n');
   };
 
-  static parseProtoContent = (lines: string[]): string => {
+  static processProtoContent = (lines: string[]): string => {
     let state = PROTO_STATE.NULL;
 
     const messageResult = {};
@@ -86,7 +56,7 @@ export default class Converter {
         nestedNames.push(match[1]);
         // console.log(line, nestedNames);
         messages.push(nestedNames.join(''));
-        messageTree = Converter.addToTree(messageTree, nestedNames, {});
+        messageTree = TreeHelper.addToTree(messageTree, nestedNames, {});
         nestedNames.pop();
         continue;
       }
@@ -96,7 +66,7 @@ export default class Converter {
         nestedNames.push(match[1]);
         // console.log(line, nestedNames);
         messages.push(nestedNames.join(''));
-        messageTree = Converter.addToTree(messageTree, nestedNames, {});
+        messageTree = TreeHelper.addToTree(messageTree, nestedNames, {});
         continue;
       }
       if ((match = line.match(/^\s*enum\s+(\w+)\s*\{/))) {
@@ -104,7 +74,7 @@ export default class Converter {
         nestedNames.push(match[1]);
         // console.log(line, nestedNames);
         enums.push(nestedNames.join(''));
-        messageTree = Converter.addToTree(messageTree, nestedNames, 'enum');
+        messageTree = TreeHelper.addToTree(messageTree, nestedNames, 'enum');
         continue;
       }
       if (line.match(/^\s*\}/)) {
@@ -165,7 +135,7 @@ export default class Converter {
                 break;
               default: {
                 if (
-                  Converter.isTreeBranch(messageTree, [
+                  TreeHelper.isTreeBranch(messageTree, [
                     ...nestedNames,
                     typeName,
                   ])
@@ -206,32 +176,5 @@ export default class Converter {
     return `${Converter.stringifyEnumsTs(
       enumResult,
     )}\n\n${Converter.stringifyMessagesTs(messageResult)}`;
-  };
-
-  static addToTree = (tree: object, keys: string[], value: any) => {
-    const result = tree; // use pointer
-
-    let currSubtree = tree;
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      if (!currSubtree[key]) {
-        currSubtree[key] = i === keys.length - 1 ? value : {};
-      }
-      currSubtree = currSubtree[key];
-    }
-    return result;
-  };
-
-  static isTreeBranch = (tree: object, keys: string[], length: number = -1) => {
-    const checkLength = length === -1 ? keys.length : length;
-    let currSubtree = tree;
-    for (let i = 0; i < checkLength; i++) {
-      const key = keys[i];
-      if (!currSubtree[key]) {
-        return false;
-      }
-      currSubtree = currSubtree[key];
-    }
-    return true;
   };
 }
