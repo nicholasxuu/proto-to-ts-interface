@@ -9,9 +9,9 @@
     "test": "ts-node ./src/test.ts"
   },
   "dependencies": {
-    "@types/node": "^12.6.8",
+    "@types/node": "^12.7.12",
     "fs-extra": "^8.1.0",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.3"
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
   }
 }
